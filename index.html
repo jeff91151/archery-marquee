@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>公開組名次跑馬燈</title>
+  <style>
+    body {
+      background: white;
+      color: black;
+      font-family: "Microsoft JhengHei", sans-serif;
+      margin: 0;
+      padding: 0;
+      font-size: 42px;
+    }
+
+    .logo-center {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 300px; /* ✅ 你可以調整大小 */
+      opacity: 0.08; /* ✅ 你可以調整透明度，例如 0.05 ~ 0.2 */
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 54px;
+      font-weight: bold;
+      margin: 40px 0 10px;
+      color: #0080ff;
+      z-index: 1;
+      position: relative;
+    }
+
+    .wrapper {
+      overflow: hidden;
+      width: 100%;
+      height: 90px;
+      position: relative;
+      background-color: transparent;
+      z-index: 1;
+    }
+
+    .marquee {
+      white-space: nowrap;
+      display: inline-block;
+      min-width: 100%;
+      animation: scroll 15s linear infinite;
+    }
+
+    @keyframes scroll {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ✅ 中央背景 LOGO -->
+  <img src="射箭隊_logo.jpg" alt="Logo" class="logo-center">
+
+  <div class="section-title">📢 公開組團體名次 📢</div>
+  <div class="wrapper"><div id="teamLine1" class="marquee">載入中...</div></div>
+  <div class="wrapper"><div id="teamLine2" class="marquee">載入中...</div></div>
+
+  <div class="section-title">📢 公開男生個人名次 📢</div>
+  <div class="wrapper"><div id="maleLine1" class="marquee">載入中...</div></div>
+  <div class="wrapper"><div id="maleLine2" class="marquee">載入中...</div></div>
+
+  <div class="section-title">📢 公開女生個人名次 📢</div>
+  <div class="wrapper"><div id="femaleLine1" class="marquee">載入中...</div></div>
+  <div class="wrapper"><div id="femaleLine2" class="marquee">載入中...</div></div>
+
+  <script>
+    const baseURL = "https://script.google.com/macros/s/AKfycbyW9un5bZUh8PrcZG_-jReHADuLGx8aBZLDKQcDkpMNwQnU0Jah0bwutjEIJ5AshBn-/exec";
+
+    async function loadMarquee(url, line1Id, line2Id) {
+      try {
+        const response = await fetch(url);
+        const text = await response.text();
+        const items = text.trim().split("｜").filter(item => !item.includes("第排名")); // ✅ 過濾開頭錯字
+
+        const groupSize = 8;
+        let currentGroup = 0;
+
+        function showGroup() {
+          const group = items.slice(currentGroup * groupSize, (currentGroup + 1) * groupSize);
+          const topLine = group.slice(0, 4).join("｜");
+          const bottomLine = group.slice(4, 8).join("｜");
+
+          document.getElementById(line1Id).innerText = topLine;
+          document.getElementById(line2Id).innerText = bottomLine;
+
+          currentGroup = (currentGroup + 1) % Math.ceil(items.length / groupSize);
+        }
+
+        showGroup();
+        setInterval(showGroup, 15000);
+      } catch (error) {
+        document.getElementById(line1Id).innerText = "❌ 無法載入資料";
+        document.getElementById(line2Id).innerText = "請確認連結與權限";
+      }
+    }
+
+    loadMarquee(`${baseURL}?type=team`, "teamLine1", "teamLine2");
+    loadMarquee(`${baseURL}?type=male`, "maleLine1", "maleLine2");
+    loadMarquee(`${baseURL}?type=female`, "femaleLine1", "femaleLine2");
+  </script>
+
+</body>
+</html>
