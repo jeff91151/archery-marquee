@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>公開組名次跑馬燈</title>
+  <title>公開組名次總覽</title>
   <style>
     body {
       background: white;
@@ -10,7 +10,7 @@
       font-family: "Microsoft JhengHei", sans-serif;
       margin: 0;
       padding: 0;
-      font-size: 42px;
+      overflow: hidden;
     }
 
     .logo-center {
@@ -18,95 +18,140 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 300px; /* ✅ 你可以調整大小 */
-      opacity: 0.08; /* ✅ 你可以調整透明度，例如 0.05 ~ 0.2 */
+      width: 400px;
+      opacity: 0.3;
       z-index: 0;
       pointer-events: none;
     }
 
+    .section {
+      display: none;
+      z-index: 1;
+      position: relative;
+      height: 100vh;
+      box-sizing: border-box;
+      padding: 20px;
+    }
+
+    .section.active {
+      display: block;
+    }
+
     .section-title {
       text-align: center;
-      font-size: 54px;
+      font-size: 36px;
       font-weight: bold;
-      margin: 40px 0 10px;
-      color: #0080ff;
-      z-index: 1;
-      position: relative;
+      margin-bottom: 16px;
+      color: #007aff;
     }
 
-    .wrapper {
-      overflow: hidden;
-      width: 100%;
-      height: 90px;
-      position: relative;
-      background-color: transparent;
-      z-index: 1;
+    .list-container {
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start;
+      height: 80vh;
     }
 
-    .marquee {
+    .rank-group {
+      flex: 1;
+      padding: 0 10px;
+    }
+
+    ul.rank-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 auto;
+      font-size: 18px;
+      line-height: 1.5;
+    }
+
+    ul.rank-list li {
+      border-bottom: 1px solid #ddd;
+      padding: 2px 0;
       white-space: nowrap;
-      display: inline-block;
-      min-width: 100%;
-      animation: scroll 15s linear infinite;
-    }
-
-    @keyframes scroll {
-      0% { transform: translateX(100%); }
-      100% { transform: translateX(-100%); }
     }
   </style>
 </head>
 <body>
 
-  <!-- ✅ 中央背景 LOGO -->
   <img src="射箭隊_logo.jpg" alt="Logo" class="logo-center">
 
-  <div class="section-title">📢 公開組團體名次 📢</div>
-  <div class="wrapper"><div id="teamLine1" class="marquee">載入中...</div></div>
-  <div class="wrapper"><div id="teamLine2" class="marquee">載入中...</div></div>
+  <div id="section-team" class="section active">
+    <div class="section-title">📢 公開組團體名次 📢</div>
+    <div class="list-container" id="container-team"></div>
+  </div>
 
-  <div class="section-title">📢 公開男生個人名次 📢</div>
-  <div class="wrapper"><div id="maleLine1" class="marquee">載入中...</div></div>
-  <div class="wrapper"><div id="maleLine2" class="marquee">載入中...</div></div>
+  <div id="section-male" class="section">
+    <div class="section-title">📢 公開男生個人名次 📢</div>
+    <div class="list-container" id="container-male"></div>
+  </div>
 
-  <div class="section-title">📢 公開女生個人名次 📢</div>
-  <div class="wrapper"><div id="femaleLine1" class="marquee">載入中...</div></div>
-  <div class="wrapper"><div id="femaleLine2" class="marquee">載入中...</div></div>
+  <div id="section-female" class="section">
+    <div class="section-title">📢 公開女生個人名次 📢</div>
+    <div class="list-container" id="container-female"></div>
+  </div>
 
   <script>
-    const baseURL = "https://script.google.com/macros/s/AKfycbyW9un5bZUh8PrcZG_-jReHADuLGx8aBZLDKQcDkpMNwQnU0Jah0bwutjEIJ5AshBn-/exec";
+    //const baseURL = "https://script.google.com/macros/s/AKfycbyW9un5bZUh8PrcZG_-jReHADuLGx8aBZLDKQcDkpMNwQnU0Jah0bwutjEIJ5AshBn-/exec";
+	const baseURL = "https://script.google.com/macros/s/AKfycbyT1xvPRDltSRuVNiwv6CqDPk4LonHKMix7caZOLoBSZ-OgIbmRDBK9nohxpnd8weXVrQ/exec";
 
-    async function loadMarquee(url, line1Id, line2Id) {
+    const configs = [
+      { type: "team", containerId: "container-team", sectionId: "section-team" },
+      { type: "male", containerId: "container-male", sectionId: "section-male" },
+      { type: "female", containerId: "container-female", sectionId: "section-female" }
+    ];
+
+    async function fetchData(type) {
       try {
-        const response = await fetch(url);
+        const response = await fetch(`${baseURL}?type=${type}`);
         const text = await response.text();
-        const items = text.trim().split("｜").filter(item => !item.includes("第排名")); // ✅ 過濾開頭錯字
-
-        const groupSize = 8;
-        let currentGroup = 0;
-
-        function showGroup() {
-          const group = items.slice(currentGroup * groupSize, (currentGroup + 1) * groupSize);
-          const topLine = group.slice(0, 4).join("｜");
-          const bottomLine = group.slice(4, 8).join("｜");
-
-          document.getElementById(line1Id).innerText = topLine;
-          document.getElementById(line2Id).innerText = bottomLine;
-
-          currentGroup = (currentGroup + 1) % Math.ceil(items.length / groupSize);
-        }
-
-        showGroup();
-        setInterval(showGroup, 15000);
-      } catch (error) {
-        document.getElementById(line1Id).innerText = "❌ 無法載入資料";
-        document.getElementById(line2Id).innerText = "請確認連結與權限";
+        return text.trim().split("｜").filter(x => x && !x.includes("第排名"));
+      } catch (err) {
+        return ["❌ 資料無法載入"];
       }
     }
 
-    loadMarquee(`${baseURL}?type=team`, "teamLine1", "teamLine2");
-    loadMarquee(`${baseURL}?type=male`, "maleLine1", "maleLine2");
-    loadMarquee(`${baseURL}?type=female`, "femaleLine1", "femaleLine2");
+    async function renderAll() {
+      for (const cfg of configs) {
+        const items = await fetchData(cfg.type);
+        const container = document.getElementById(cfg.containerId);
+        container.innerHTML = "";
+
+        const columns = 4;
+        const chunkSize = Math.ceil(items.length / columns);
+
+        for (let i = 0; i < columns; i++) {
+          const group = document.createElement("div");
+          group.className = "rank-group";
+
+          const ul = document.createElement("ul");
+          ul.className = "rank-list";
+
+          items.slice(i * chunkSize, (i + 1) * chunkSize).forEach(item => {
+            const li = document.createElement("li");
+            li.textContent = item;
+            ul.appendChild(li);
+          });
+
+          group.appendChild(ul);
+          container.appendChild(group);
+        }
+      }
+    }
+
+    function cycleSections() {
+      let current = 0;
+      setInterval(() => {
+        configs.forEach((cfg, i) => {
+          const section = document.getElementById(cfg.sectionId);
+          section.classList.toggle("active", i === current);
+        });
+        current = (current + 1) % configs.length;
+      }, 15000); // 可自行調整顯示秒數
+    }
+
+    renderAll();
+    cycleSections();
   </script>
 
 </body>
