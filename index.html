@@ -1,158 +1,121 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <title>公開組名次總覽</title>
-  <style>
-    body {
-      background: white;
-      color: black;
-      font-family: "Microsoft JhengHei", sans-serif;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-    }
-
-    .logo-center {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 400px;
-      opacity: 0.3;
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    .section {
-      display: none;
-      z-index: 1;
-      position: relative;
-      height: 100vh;
-      box-sizing: border-box;
-      padding: 20px;
-    }
-
-    .section.active {
-      display: block;
-    }
-
-    .section-title {
-      text-align: center;
-      font-size: 36px;
-      font-weight: bold;
-      margin-bottom: 16px;
-      color: #007aff;
-    }
-
-    .list-container {
-      display: flex;
-      justify-content: space-around;
-      align-items: flex-start;
-      height: 80vh;
-    }
-
-    .rank-group {
-      flex: 1;
-      padding: 0 10px;
-    }
-
-    ul.rank-list {
-      list-style: none;
-      padding: 0;
-      margin: 0 auto;
-      font-size: 18px;
-      line-height: 1.5;
-    }
-
-    ul.rank-list li {
-      border-bottom: 1px solid #ddd;
-      padding: 2px 0;
-      white-space: nowrap;
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>公開組名次總覽</title>
+<style>
+  :root{
+    --item-font:18px;       /* 依 js 動態覆寫 */
+    --line-height:1.5;
+    --columns:4;            /* 依 js 動態覆寫 */
+  }
+  body{
+    margin:0;padding:0;
+    font-family:"Microsoft JhengHei",sans-serif;
+    background:#fff;color:#000;overflow:hidden;
+  }
+  .logo-center{
+    position:fixed;top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    width:400px;opacity:.06;pointer-events:none;z-index:0;
+  }
+  .section{display:none;height:100vh;box-sizing:border-box;
+    padding:20px;position:relative;z-index:1;}
+  .section.active{display:block;}
+  .section-title{
+    font-size:36px;font-weight:bold;color:#007aff;
+    text-align:center;margin:0 0 14px;
+  }
+  .list-container{
+    display:flex;justify-content:center;gap:8px;
+    height:calc(100vh - 80px); /* 80≈title+padding */
+  }
+  .rank-group{flex:1 1 calc(100%/var(--columns));}
+  ul.rank-list{
+    list-style:none;margin:0;padding:0;
+    font-size:var(--item-font);line-height:var(--line-height);
+  }
+  ul.rank-list li{
+    border-bottom:1px solid #ddd;padding:1px 0;
+    white-space:nowrap;
+  }
+</style>
 </head>
 <body>
+<img src="射箭隊_logo.jpg" class="logo-center" alt="logo"/>
 
-  <img src="射箭隊_logo.jpg" alt="Logo" class="logo-center">
+<div id="section-team"   class="section active">
+  <h2 class="section-title">📢 公開組團體名次 📢</h2>
+  <div id="container-team" class="list-container"></div>
+</div>
 
-  <div id="section-team" class="section active">
-    <div class="section-title">📢 公開組團體名次 📢</div>
-    <div class="list-container" id="container-team"></div>
-  </div>
+<div id="section-male"   class="section">
+  <h2 class="section-title">📢 公開男生個人名次 📢</h2>
+  <div id="container-male" class="list-container"></div>
+</div>
 
-  <div id="section-male" class="section">
-    <div class="section-title">📢 公開男生個人名次 📢</div>
-    <div class="list-container" id="container-male"></div>
-  </div>
+<div id="section-female" class="section">
+  <h2 class="section-title">📢 公開女生個人名次 📢</h2>
+  <div id="container-female" class="list-container"></div>
+</div>
 
-  <div id="section-female" class="section">
-    <div class="section-title">📢 公開女生個人名次 📢</div>
-    <div class="list-container" id="container-female"></div>
-  </div>
+<script>
+const baseURL="https://script.google.com/macros/s/AKfycbxLHMBmzK8WW38csVWg-LyEdEJJJcQsLBoMlBRO6v0z1z0P8KTCdvtlpWaAI-opsNd3/exec";
+const configs=[
+  {type:"team"  ,cnt:"container-team"  ,sec:"section-team"},
+  {type:"male"  ,cnt:"container-male"  ,sec:"section-male"},
+  {type:"female",cnt:"container-female",sec:"section-female"}
+];
 
-  <script>
-    //const baseURL = "https://script.google.com/macros/s/AKfycbyW9un5bZUh8PrcZG_-jReHADuLGx8aBZLDKQcDkpMNwQnU0Jah0bwutjEIJ5AshBn-/exec";
-	//const baseURL = "https://script.google.com/macros/s/AKfycbyT1xvPRDltSRuVNiwv6CqDPk4LonHKMix7caZOLoBSZ-OgIbmRDBK9nohxpnd8weXVrQ/exec";
-	const baseURL = "https://script.google.com/macros/s/AKfycbxLHMBmzK8WW38csVWg-LyEdEJJJcQsLBoMlBRO6v0z1z0P8KTCdvtlpWaAI-opsNd3/exec";
-    const configs = [
-      { type: "team", containerId: "container-team", sectionId: "section-team" },
-      { type: "male", containerId: "container-male", sectionId: "section-male" },
-      { type: "female", containerId: "container-female", sectionId: "section-female" }
-    ];
+/* 依筆數決定欄位與字體 ---------------------------- */
+function tuneStyle(items){
+  let cols=4,font=18;
+  if(items.length>80){cols=5;font=16;}
+  if(items.length>100){cols=5;font=14;}
+  document.documentElement.style.setProperty("--columns",cols);
+  document.documentElement.style.setProperty("--item-font",font+"px");
+}
 
-    async function fetchData(type) {
-      try {
-        const response = await fetch(`${baseURL}?type=${type}`);
-        const text = await response.text();
-        return text.trim().split("｜").filter(x => x && !x.includes("第排名"));
-      } catch (err) {
-        return ["❌ 資料無法載入"];
-      }
+async function fetchData(t){
+  try{
+    const txt=await (await fetch(`${baseURL}?type=${t}`)).text();
+    return txt.trim().split("｜").filter(x=>x);
+  }catch(e){return["❌ 資料無法載入"]; }
+}
+
+async function renderAll(){
+  for(const cfg of configs){
+    const items=await fetchData(cfg.type);
+    tuneStyle(items);          // 動態調整一次即可
+    const container=document.getElementById(cfg.cnt);
+    container.innerHTML="";
+    const cols=parseInt(getComputedStyle(document.documentElement).getPropertyValue("--columns"));
+    const chunk=Math.ceil(items.length/cols);
+    for(let c=0;c<cols;c++){
+      const div=document.createElement("div");
+      div.className="rank-group";
+      const ul=document.createElement("ul");
+      ul.className="rank-list";
+      items.slice(c*chunk,(c+1)*chunk).forEach(t=>{
+        const li=document.createElement("li");li.textContent=t;ul.appendChild(li);
+      });
+      div.appendChild(ul);container.appendChild(div);
     }
+  }
+}
 
-    async function renderAll() {
-      for (const cfg of configs) {
-        const items = await fetchData(cfg.type);
-        const container = document.getElementById(cfg.containerId);
-        container.innerHTML = "";
+function cycleSections(){
+  let cur=0;
+  setInterval(()=>{
+    configs.forEach((cfg,i)=>{
+      document.getElementById(cfg.sec).classList.toggle("active",i===cur);
+    });
+    cur=(cur+1)%configs.length;
+  },15000); // 每 15 秒切一頁
+}
 
-        const columns = 4;
-        const chunkSize = Math.ceil(items.length / columns);
-
-        for (let i = 0; i < columns; i++) {
-          const group = document.createElement("div");
-          group.className = "rank-group";
-
-          const ul = document.createElement("ul");
-          ul.className = "rank-list";
-
-          items.slice(i * chunkSize, (i + 1) * chunkSize).forEach(item => {
-            const li = document.createElement("li");
-            li.textContent = item;
-            ul.appendChild(li);
-          });
-
-          group.appendChild(ul);
-          container.appendChild(group);
-        }
-      }
-    }
-
-    function cycleSections() {
-      let current = 0;
-      setInterval(() => {
-        configs.forEach((cfg, i) => {
-          const section = document.getElementById(cfg.sectionId);
-          section.classList.toggle("active", i === current);
-        });
-        current = (current + 1) % configs.length;
-      }, 15000); // 可自行調整顯示秒數
-    }
-
-    renderAll();
-    cycleSections();
-  </script>
-
+renderAll();
+cycleSections();
+</script>
 </body>
 </html>
