@@ -170,7 +170,7 @@
 
 <script>
 // ⚠️ 替換成你最新部署的 GAS URL
-const baseURL = "https://script.google.com/macros/s/AKfycbxMWfGqXXJ8L5AJURsQ3d7WcWPm6k-NlNyqq0q5fEvDKohK9EmaneI1PuvnOtEnMsCa/exec";
+const baseURL = "https://script.google.com/macros/s/AKfycbwGJVaX0_0dBo5kiQDErM-d2jHek2OLcN-OUtbyVd9Tu1_pILtRrQ5-ZCv9Bz8XLkB1/exec";
 
 const sheets = [
   "計算_原住民傳統弓_男", "計算_原住民傳統弓_女",
@@ -269,13 +269,24 @@ async function fetchPlayerDetail(groupName, playerName) {
   modal.style.display = "flex";
 
   try {
-    // 傳送 action=detail
     const url = `${baseURL}?action=detail&group=${encodeURIComponent(groupName)}&name=${encodeURIComponent(playerName)}`;
     const response = await fetch(url);
     const detail = await response.json();
 
+    // 【防呆1】如果回傳的是陣列，代表 GAS 還是舊版的程式碼！
+    if (Array.isArray(detail)) {
+      modalBody.innerHTML = "<div style='text-align:center; color:red;'>❌ 伺服器仍在執行舊版程式！<br>請回 GAS「管理部署作業」建立新版本，並更新網址！</div>";
+      return;
+    }
+
+    // 【防呆2】如果是名字找不到或工作表對不起來，會把後端的錯誤訊息印出來
+    if (detail.error) {
+      modalBody.innerHTML = `<div style='text-align:center; color:red; padding: 20px;'>❌ ${detail.error}</div>`;
+      return;
+    }
+
     if (!detail.scores || detail.scores.length === 0) {
-      modalBody.innerHTML = "<div style='text-align:center; color:red;'>找不到該選手的詳細紀錄單。</div>";
+      modalBody.innerHTML = "<div style='text-align:center; color:red;'>找不到該選手的分數紀錄。</div>";
       return;
     }
 
@@ -289,7 +300,7 @@ async function fetchPlayerDetail(groupName, playerName) {
       let tdHtml = "";
       
       roundScores.forEach(score => {
-        let val = Number(score) || 0; // 避免出現非數字
+        let val = Number(score) || 0; 
         roundSum += val;
         tdHtml += `<td>${score !== "" ? score : "-"}</td>`;
       });
@@ -310,7 +321,7 @@ async function fetchPlayerDetail(groupName, playerName) {
     modalBody.innerHTML = html;
 
   } catch (error) {
-    modalBody.innerHTML = "<div style='text-align:center; color:red;'>❌ 載入失敗，請稍後再試。</div>";
+    modalBody.innerHTML = "<div style='text-align:center; color:red;'>❌ 載入失敗，請檢查網路或稍後再試。</div>";
   }
 }
 
