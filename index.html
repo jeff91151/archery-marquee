@@ -1,121 +1,227 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8" />
-<title>公開組名次總覽</title>
-<style>
-  :root{
-    --item-font:18px;       /* 依 js 動態覆寫 */
-    --line-height:1.5;
-    --columns:4;            /* 依 js 動態覆寫 */
-  }
-  body{
-    margin:0;padding:0;
-    font-family:"Microsoft JhengHei",sans-serif;
-    background:#fff;color:#000;overflow:hidden;
-  }
-  .logo-center{
-    position:fixed;top:50%;left:50%;
-    transform:translate(-50%,-50%);
-    width:400px;opacity:.06;pointer-events:none;z-index:0;
-  }
-  .section{display:none;height:100vh;box-sizing:border-box;
-    padding:20px;position:relative;z-index:1;}
-  .section.active{display:block;}
-  .section-title{
-    font-size:36px;font-weight:bold;color:#007aff;
-    text-align:center;margin:0 0 14px;
-  }
-  .list-container{
-    display:flex;justify-content:center;gap:8px;
-    height:calc(100vh - 80px); /* 80≈title+padding */
-  }
-  .rank-group{flex:1 1 calc(100%/var(--columns));}
-  ul.rank-list{
-    list-style:none;margin:0;padding:0;
-    font-size:var(--item-font);line-height:var(--line-height);
-  }
-  ul.rank-list li{
-    border-bottom:1px solid #ddd;padding:1px 0;
-    white-space:nowrap;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>射箭比賽名次總覽</title>
+  <style>
+    :root {
+      --primary-color: #007aff;
+      --bg-color: #f4f7f6;
+    }
+    body {
+      margin: 0; padding: 0;
+      font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-color);
+      color: #333;
+    }
+    
+    /* 頂部固定導覽列 */
+    header {
+      background: #fff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-title {
+      text-align: center;
+      margin: 0;
+      padding: 15px 0 5px 0;
+      color: var(--primary-color);
+      font-size: 22px;
+    }
+    
+    /* 頁籤選單（手機可左右滑動） */
+    .tabs-container {
+      display: flex;
+      overflow-x: auto;
+      white-space: nowrap;
+      padding: 10px 15px;
+      gap: 10px;
+      /* 隱藏卷軸但保持可滑動 */
+      scrollbar-width: none; 
+      -ms-overflow-style: none;
+    }
+    .tabs-container::-webkit-scrollbar { display: none; }
+    
+    .tab-btn {
+      background: #eee;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-weight: bold;
+      color: #666;
+    }
+    .tab-btn.active {
+      background: var(--primary-color);
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(0, 122, 255, 0.4);
+    }
+
+    /* 內容區塊 */
+    .content-area {
+      padding: 20px 15px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    /* 狀態提示 (載入中...) */
+    #status-msg {
+      text-align: center;
+      color: #888;
+      font-size: 18px;
+      margin-top: 40px;
+    }
+
+    /* 成績列表 - 使用 CSS Grid 自動排版 (手機1欄，平板2欄，電腦3-4欄) */
+    .rank-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 15px;
+    }
+
+    /* 單筆成績卡片 */
+    .rank-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      border-left: 5px solid #ddd;
+      transition: transform 0.2s;
+    }
+    .rank-card:hover { transform: translateY(-2px); }
+    
+    .rank-num {
+      font-size: 24px;
+      font-weight: 900;
+      color: #aaa;
+      width: 45px;
+      text-align: center;
+      margin-right: 15px;
+    }
+    .rank-info { flex-grow: 1; }
+    .rank-name { font-size: 18px; font-weight: bold; margin-bottom: 4px; color: #222;}
+    .rank-score { font-size: 14px; color: #666; }
+    
+    /* 前三名專屬樣式 */
+    .rank-1 { border-left-color: #FFD700; background: #FFFDF0; }
+    .rank-1 .rank-num { color: #FFD700; font-size: 28px; }
+    .rank-2 { border-left-color: #C0C0C0; background: #F8F8F8; }
+    .rank-2 .rank-num { color: #C0C0C0; font-size: 26px; }
+    .rank-3 { border-left-color: #CD7F32; background: #FFF6F0; }
+    .rank-3 .rank-num { color: #CD7F32; font-size: 26px; }
+    
+  </style>
 </head>
 <body>
-<img src="射箭隊_logo.jpg" class="logo-center" alt="logo"/>
 
-<div id="section-team"   class="section active">
-  <h2 class="section-title">📢 公開組團體名次 📢</h2>
-  <div id="container-team" class="list-container"></div>
-</div>
+<header>
+  <h1 class="header-title">🏹 射箭比賽成績查詢</h1>
+  <div class="tabs-container" id="tabs"></div>
+</header>
 
-<div id="section-male"   class="section">
-  <h2 class="section-title">📢 公開男生個人名次 📢</h2>
-  <div id="container-male" class="list-container"></div>
-</div>
-
-<div id="section-female" class="section">
-  <h2 class="section-title">📢 公開女生個人名次 📢</h2>
-  <div id="container-female" class="list-container"></div>
+<div class="content-area">
+  <div id="status-msg">請選擇上方組別...</div>
+  <div id="rank-container" class="rank-grid"></div>
 </div>
 
 <script>
-const baseURL="https://script.google.com/macros/s/AKfycbxLHMBmzK8WW38csVWg-LyEdEJJJcQsLBoMlBRO6v0z1z0P8KTCdvtlpWaAI-opsNd3/exec";
-const configs=[
-  {type:"team"  ,cnt:"container-team"  ,sec:"section-team"},
-  {type:"male"  ,cnt:"container-male"  ,sec:"section-male"},
-  {type:"female",cnt:"container-female",sec:"section-female"}
+// ⚠️ 請將這裡替換成你剛剛重新部署 Apps Script 獲得的 URL
+const baseURL = "https://script.google.com/macros/s/AKfycbxg9EEOzN_JGDSjbTcy6N4MtSpg1xjpAb18oL3UiKR7XiaFMM5e2vlwUIJoIEyEmV4j/exec";
+
+// 你的 10 個工作表名稱 (精準對應試算表下方的工作表名稱)
+const sheets = [
+  "計算_原住民傳統弓_男", "計算_原住民傳統弓_女",
+  "計算_傳統弓_男", "計算_傳統弓_女",
+  "計算_國小_男", "計算_國小_女",
+  "計算_國中_男", "計算_國中_女",
+  "計算_決賽_原住民傳統弓_男", "計算_決賽_原住民傳統弓_女"
 ];
 
-/* 依筆數決定欄位與字體 ---------------------------- */
-function tuneStyle(items){
-  let cols=4,font=18;
-  if(items.length>80){cols=5;font=16;}
-  if(items.length>100){cols=5;font=14;}
-  document.documentElement.style.setProperty("--columns",cols);
-  document.documentElement.style.setProperty("--item-font",font+"px");
-}
+// 初始化頁面
+function init() {
+  const tabsDiv = document.getElementById("tabs");
+  
+  // 建立按鈕
+  sheets.forEach((sheetName, index) => {
+    // 為了版面好看，把 "計算_" 兩個字去掉當作按鈕文字
+    const displayName = sheetName.replace("計算_", ""); 
+    
+    const btn = document.createElement("button");
+    btn.className = "tab-btn";
+    btn.textContent = displayName;
+    btn.onclick = () => {
+      // 移除所有按鈕的 active 狀態
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      loadData(sheetName);
+    };
+    tabsDiv.appendChild(btn);
+  });
 
-async function fetchData(t){
-  try{
-    const txt=await (await fetch(`${baseURL}?type=${t}`)).text();
-    return txt.trim().split("｜").filter(x=>x);
-  }catch(e){return["❌ 資料無法載入"]; }
-}
-
-async function renderAll(){
-  for(const cfg of configs){
-    const items=await fetchData(cfg.type);
-    tuneStyle(items);          // 動態調整一次即可
-    const container=document.getElementById(cfg.cnt);
-    container.innerHTML="";
-    const cols=parseInt(getComputedStyle(document.documentElement).getPropertyValue("--columns"));
-    const chunk=Math.ceil(items.length/cols);
-    for(let c=0;c<cols;c++){
-      const div=document.createElement("div");
-      div.className="rank-group";
-      const ul=document.createElement("ul");
-      ul.className="rank-list";
-      items.slice(c*chunk,(c+1)*chunk).forEach(t=>{
-        const li=document.createElement("li");li.textContent=t;ul.appendChild(li);
-      });
-      div.appendChild(ul);container.appendChild(div);
-    }
+  // 預設載入第一個組別
+  if (tabsDiv.firstChild) {
+    tabsDiv.firstChild.click();
   }
 }
 
-function cycleSections(){
-  let cur=0;
-  setInterval(()=>{
-    configs.forEach((cfg,i)=>{
-      document.getElementById(cfg.sec).classList.toggle("active",i===cur);
+// 從 GAS 抓取資料
+async function loadData(sheetName) {
+  const container = document.getElementById("rank-container");
+  const statusMsg = document.getElementById("status-msg");
+  
+  container.innerHTML = "";
+  statusMsg.style.display = "block";
+  statusMsg.textContent = "⏳ 資料載入中，請稍候...";
+
+  try {
+    const url = `${baseURL}?sheet=${encodeURIComponent(sheetName)}`;
+    const response = await fetch(url);
+    const data = await response.json(); // 這裡現在接收 JSON 格式了
+
+    if (data.length === 0) {
+      statusMsg.textContent = "📭 目前還沒有成績紀錄喔！";
+      return;
+    }
+
+    statusMsg.style.display = "none";
+
+    // 渲染卡片
+    data.forEach(item => {
+      const card = document.createElement("div");
+      card.className = "rank-card";
+      
+      // 處理前三名的特殊樣式與獎牌
+      let medal = "";
+      if (item.rank == 1) { card.classList.add("rank-1"); medal = "🥇"; }
+      else if (item.rank == 2) { card.classList.add("rank-2"); medal = "🥈"; }
+      else if (item.rank == 3) { card.classList.add("rank-3"); medal = "🥉"; }
+
+      card.innerHTML = `
+        <div class="rank-num">${item.rank}</div>
+        <div class="rank-info">
+          <div class="rank-name">${item.name} ${medal}</div>
+          <div class="rank-score">總分：${item.score} 分</div>
+        </div>
+      `;
+      container.appendChild(card);
     });
-    cur=(cur+1)%configs.length;
-  },15000); // 每 15 秒切一頁
+
+  } catch (error) {
+    statusMsg.textContent = "❌ 資料載入失敗，請檢查網路或稍後再試";
+    console.error(error);
+  }
 }
 
-renderAll();
-cycleSections();
+// 執行初始化
+init();
 </script>
+
 </body>
 </html>
