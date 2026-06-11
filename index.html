@@ -172,11 +172,11 @@
 // ⚠️ 替換成你最新部署的 GAS URL
 const baseURL = "https://script.google.com/macros/s/AKfycbwGJVaX0_0dBo5kiQDErM-d2jHek2OLcN-OUtbyVd9Tu1_pILtRrQ5-ZCv9Bz8XLkB1/exec";
 
+// 🎯 修正：國小、國中不分男女，直接對應計算_國小、計算_國中
 const sheets = [
   "計算_原住民傳統弓_男", "計算_原住民傳統弓_女",
   "計算_傳統弓_男", "計算_傳統弓_女",
-  "計算_國小_男", "計算_國小_女",
-  "計算_國中_男", "計算_國中_女",
+  "計算_國小", "計算_國中",
   "計算_決賽_原住民傳統弓_男", "計算_決賽_原住民傳統弓_女"
 ];
 
@@ -290,9 +290,9 @@ async function fetchPlayerDetail(groupName, playerName) {
       return;
     }
 
-    // 繪製分數表格
+    // 🎯 修正：表格左上角改為「靶數」，並改為 1~5 兩次循環
     let html = `<table class="detail-table">
-                  <tr><th>局數</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>小計</th></tr>`;
+                  <tr><th>靶數</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>小計</th></tr>`;
     
     let totalSum = 0;
     detail.scores.forEach((roundScores, index) => {
