@@ -33,7 +33,7 @@
       gap: 15px;
     }
     .header-logo {
-      height: 50px; /* 控制 Logo 大小 */
+      height: 50px; 
       width: auto;
     }
     .header-title {
@@ -68,10 +68,16 @@
     .content-area {
       padding: 20px 15px; max-width: 1200px; margin: 0 auto;
     }
-    .search-box {
-      width: 100%;
-      padding: 12px 15px;
+
+    /* 🎯 新增：搜尋列與重新整理按鈕的排版 */
+    .controls-area {
+      display: flex;
+      gap: 10px;
       margin-bottom: 20px;
+    }
+    .search-box {
+      flex-grow: 1;
+      padding: 12px 15px;
       border: 2px solid var(--secondary-color);
       border-radius: 8px;
       font-size: 16px;
@@ -80,8 +86,23 @@
       transition: border-color 0.3s;
     }
     .search-box:focus { border-color: var(--primary-color); }
+    
+    .refresh-btn {
+      background: #fff;
+      border: 2px solid var(--primary-color);
+      color: var(--primary-color);
+      border-radius: 8px;
+      padding: 0 15px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+      white-space: nowrap;
+    }
+    .refresh-btn:hover { background: var(--primary-color); color: #fff; }
+    .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    #status-msg { text-align: center; color: #888; font-size: 18px; margin-top: 40px; }
+    #status-msg { text-align: center; color: #888; font-size: 18px; margin-top: 40px; display: none; }
 
     /* 成績列表 Grid */
     .rank-grid {
@@ -109,6 +130,49 @@
     .rank-2 .rank-num { color: #C0C0C0; font-size: 26px; }
     .rank-3 { border-left-color: #CD7F32; background: #FFF6F0; }
     .rank-3 .rank-num { color: #CD7F32; font-size: 26px; }
+
+    /* 🎯 新增：搜尋關鍵字高亮 */
+    .highlight {
+      background-color: #fff59d; /* 柔和的黃色 */
+      color: #d84315; /* 搭配深橘紅色讓字體更明顯 */
+      padding: 0 2px;
+      border-radius: 3px;
+    }
+
+    /* 🎯 新增：骨架屏 (Skeleton) 動畫與樣式 */
+    .skeleton-card { cursor: default; }
+    .skeleton-card:hover { transform: none; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .shimmer-box {
+      background: #f6f7f8;
+      background-image: linear-gradient(90deg, #eee 25%, #e0e0e0 50%, #eee 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite linear;
+      border-radius: 4px;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .skel-num { width: 35px; height: 35px; margin: 0 auto; }
+    .skel-line1 { width: 60%; height: 20px; margin-bottom: 8px; }
+    .skel-line2 { width: 40%; height: 16px; }
+
+    /* 🎯 新增：回到頂部按鈕 */
+    #back-to-top {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      z-index: 99;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      font-size: 24px;
+      cursor: pointer;
+      display: none; /* 預設隱藏 */
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      transition: transform 0.2s, background 0.2s;
+    }
+    #back-to-top:hover { background: #5d4037; transform: scale(1.1); }
 
     /* 詳細成績彈出視窗 (Modal) */
     .modal-overlay {
@@ -150,11 +214,16 @@
 </header>
 
 <div class="content-area">
-  <input type="text" id="search-input" class="search-box" placeholder="🔍 輸入選手姓名快速搜尋...">
+  <div class="controls-area">
+    <input type="text" id="search-input" class="search-box" placeholder="🔍 輸入選手姓名快速搜尋...">
+    <button id="refresh-btn" class="refresh-btn" onclick="refreshCurrentData()">🔄 更新</button>
+  </div>
   
-  <div id="status-msg">請選擇上方組別...</div>
+  <div id="status-msg"></div>
   <div id="rank-container" class="rank-grid"></div>
 </div>
+
+<button id="back-to-top" onclick="scrollToTop()">⬆️</button>
 
 <div class="modal-overlay" id="detail-modal">
   <div class="modal-content">
@@ -169,10 +238,8 @@
 </div>
 
 <script>
-// ⚠️ 替換成你最新部署的 GAS URL
 const baseURL = "https://script.google.com/macros/s/AKfycbzmBdB-IvDzS2U4VBnnYO1aup-xXdEQqMkfMkChzClYiBE2kk30Yt8nTyQey8ZW5blK/exec";
 
-// 🎯 修正：國小、國中不分男女，直接對應計算_國小、計算_國中
 const sheets = [
   "計算_原住民傳統弓_男", "計算_原住民傳統弓_女",
   "計算_傳統弓_男", "計算_傳統弓_女",
@@ -180,8 +247,8 @@ const sheets = [
   "計算_決賽_原住民傳統弓_男", "計算_決賽_原住民傳統弓_女"
 ];
 
-let currentData = []; // 儲存當前組別的所有資料，供搜尋使用
-let currentSheet = ""; // 紀錄現在在哪個組別
+let currentData = []; 
+let currentSheet = ""; 
 
 function init() {
   const tabsDiv = document.getElementById("tabs");
@@ -195,7 +262,7 @@ function init() {
       document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       currentSheet = sheetName;
-      document.getElementById("search-input").value = ""; // 切換組別時清空搜尋
+      document.getElementById("search-input").value = ""; 
       loadData(sheetName);
     };
     tabsDiv.appendChild(btn);
@@ -203,39 +270,102 @@ function init() {
 
   if (tabsDiv.firstChild) tabsDiv.firstChild.click();
 
-  // 綁定搜尋框事件
+  // 綁定搜尋框事件 (加入 keyword 傳遞以供高亮顯示)
   document.getElementById("search-input").addEventListener("input", function(e) {
-    const keyword = e.target.value.trim().toLowerCase();
-    renderCards(currentData.filter(item => item.name.toLowerCase().includes(keyword)));
+    const keyword = e.target.value.trim();
+    if (keyword === "") {
+      renderCards(currentData);
+    } else {
+      const lowerKeyword = keyword.toLowerCase();
+      const filtered = currentData.filter(item => item.name.toLowerCase().includes(lowerKeyword));
+      renderCards(filtered, keyword); // 傳入 keyword 進行高亮
+    }
   });
+
+  // 綁定滾動事件：控制「回到頂部」按鈕顯示
+  window.addEventListener('scroll', function() {
+    const topBtn = document.getElementById('back-to-top');
+    if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+      topBtn.style.display = "block";
+    } else {
+      topBtn.style.display = "none";
+    }
+  });
+}
+
+// 🎯 新增：手動更新當前組別成績
+function refreshCurrentData() {
+  const btn = document.getElementById("refresh-btn");
+  btn.disabled = true;
+  btn.textContent = "⏳ 更新中";
+  document.getElementById("search-input").value = ""; // 清空搜尋框
+  
+  loadData(currentSheet).finally(() => {
+    btn.disabled = false;
+    btn.textContent = "🔄 更新";
+  });
+}
+
+// 🎯 新增：回到頂部平滑滾動
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// 🎯 新增：渲染骨架屏 (Skeleton)
+function renderSkeleton() {
+  const container = document.getElementById("rank-container");
+  container.innerHTML = "";
+  // 隨機產生 6~8 個骨架卡片填滿畫面
+  for(let i=0; i<8; i++) {
+    container.innerHTML += `
+      <div class="rank-card skeleton-card">
+        <div class="rank-num"><div class="shimmer-box skel-num"></div></div>
+        <div class="rank-info">
+          <div class="shimmer-box skel-line1"></div>
+          <div class="shimmer-box skel-line2"></div>
+        </div>
+      </div>
+    `;
+  }
 }
 
 async function loadData(sheetName) {
   const statusMsg = document.getElementById("status-msg");
-  document.getElementById("rank-container").innerHTML = "";
-  statusMsg.style.display = "block";
-  statusMsg.textContent = "⏳ 資料載入中，請稍候...";
+  statusMsg.style.display = "none";
+  
+  // 顯示骨架屏動畫
+  renderSkeleton();
 
   try {
-    // 預設抓取排行榜 (action=list)
     const url = `${baseURL}?sheet=${encodeURIComponent(sheetName)}`;
     const response = await fetch(url);
     currentData = await response.json(); 
 
-    statusMsg.style.display = currentData.length === 0 ? "block" : "none";
-    if (currentData.length === 0) statusMsg.textContent = "📭 目前還沒有成績紀錄喔！";
+    if (currentData.length === 0) {
+      document.getElementById("rank-container").innerHTML = "";
+      statusMsg.style.display = "block";
+      statusMsg.textContent = "📭 目前還沒有成績紀錄喔！";
+      return;
+    }
     
     renderCards(currentData);
   } catch (error) {
+    document.getElementById("rank-container").innerHTML = "";
+    statusMsg.style.display = "block";
     statusMsg.textContent = "❌ 資料載入失敗，請檢查網路或稍後再試";
   }
 }
 
-// 負責把資料畫成一張張的卡片
-function renderCards(dataArray) {
+// 負責把資料畫成一張張的卡片 (🎯 新增：加入關鍵字高亮邏輯)
+function renderCards(dataArray, keyword = "") {
   const container = document.getElementById("rank-container");
   container.innerHTML = "";
   
+  if (dataArray.length === 0) {
+    container.innerHTML = "<div style='grid-column: 1 / -1; text-align: center; padding: 20px; color: #888;'>找不到符合的選手名稱</div>";
+    return;
+  }
+
   dataArray.forEach(item => {
     const card = document.createElement("div");
     card.className = "rank-card";
@@ -245,15 +375,22 @@ function renderCards(dataArray) {
     else if (item.rank == 2) { card.classList.add("rank-2"); medal = "🥈"; }
     else if (item.rank == 3) { card.classList.add("rank-3"); medal = "🥉"; }
 
+    // 處理關鍵字高亮
+    let displayName = item.name;
+    if (keyword !== "") {
+      // 使用 RegExp 忽略大小寫進行替換，加上 highlight class
+      const regex = new RegExp(`(${keyword})`, 'gi');
+      displayName = item.name.replace(regex, `<span class="highlight">$1</span>`);
+    }
+
     card.innerHTML = `
       <div class="rank-num">${item.rank}</div>
       <div class="rank-info">
-        <div class="rank-name">${item.name} ${medal}</div>
+        <div class="rank-name">${displayName} ${medal}</div>
         <div class="rank-score">總分：${item.score} 分</div>
       </div>
     `;
     
-    // 點擊卡片，呼叫詳細資料 API
     card.onclick = () => fetchPlayerDetail(currentSheet, item.name);
     container.appendChild(card);
   });
@@ -273,13 +410,11 @@ async function fetchPlayerDetail(groupName, playerName) {
     const response = await fetch(url);
     const detail = await response.json();
 
-    // 【防呆1】如果回傳的是陣列，代表 GAS 還是舊版的程式碼！
     if (Array.isArray(detail)) {
       modalBody.innerHTML = "<div style='text-align:center; color:red;'>❌ 伺服器仍在執行舊版程式！<br>請回 GAS「管理部署作業」建立新版本，並更新網址！</div>";
       return;
     }
 
-    // 【防呆2】如果是名字找不到或工作表對不起來，會把後端的錯誤訊息印出來
     if (detail.error) {
       modalBody.innerHTML = `<div style='text-align:center; color:red; padding: 20px;'>❌ ${detail.error}</div>`;
       return;
@@ -290,7 +425,6 @@ async function fetchPlayerDetail(groupName, playerName) {
       return;
     }
 
-    // 🎯 修正：表格左上角改為「靶數」，並改為 1~5 兩次循環
     let html = `<table class="detail-table">
                   <tr><th>靶數</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>小計</th></tr>`;
     
@@ -325,12 +459,10 @@ async function fetchPlayerDetail(groupName, playerName) {
   }
 }
 
-// 關閉 Modal
 function closeModal() {
   document.getElementById("detail-modal").style.display = "none";
 }
 
-// 點擊 Modal 外部也能關閉
 window.onclick = function(event) {
   const modal = document.getElementById("detail-modal");
   if (event.target == modal) {
