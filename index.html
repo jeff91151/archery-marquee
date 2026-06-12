@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>射箭比賽成績查詢 - 清晰版</title>
+  <title>射箭比賽成績查詢 - 敬老清晰版</title>
   <style>
     :root {
-      var(--primary-color): #4e342e; 
       --primary-color: #4e342e; 
       --secondary-color: #bcaaa4;
       --bg-color: #f0f4f3;
@@ -42,7 +41,7 @@
       background: #e0e0e0; border: none; padding: 12px 22px;
       border-radius: 28px; font-size: 20px; cursor: pointer;
       transition: 0.3s; font-weight: 900; color: #444;
-      flex-shrink: 0; /* 確保按鈕不會被壓縮 */
+      flex-shrink: 0; 
     }
     .tab-btn.active {
       background: var(--primary-color); color: #fff;
@@ -51,13 +50,18 @@
 
     .content-area { padding: 20px 15px; max-width: 1200px; margin: 0 auto; overflow-x: hidden; }
 
-    .controls-area { display: flex; gap: 10px; margin-bottom: 25px; align-items: stretch; }
+    /* 🎯 預留高度，防止鍵盤自動彈起時被 Header 蓋住 */
+    .controls-area { 
+      display: flex; gap: 10px; margin-bottom: 25px; align-items: stretch;
+      scroll-margin-top: 180px; 
+    }
     
     .search-box {
       flex-grow: 1; padding: 12px 15px; border: 3px solid var(--secondary-color);
       border-radius: 12px; font-size: 20px; box-sizing: border-box;
       outline: none; transition: border-color 0.3s;
-      min-width: 0; /* 防止超出 flex 容器 */
+      min-width: 0; 
+      scroll-margin-top: 180px; /* 雙重保險 */
     }
     .search-box:focus { border-color: var(--primary-color); }
     
@@ -65,7 +69,7 @@
       background: #fff; border: 3px solid var(--primary-color); color: var(--primary-color);
       border-radius: 12px; padding: 0 15px; font-size: 20px; font-weight: 900;
       cursor: pointer; transition: 0.3s; white-space: nowrap;
-      flex-shrink: 0; /* 🎯 防破圖核心：強制更新按鈕不能被壓縮 */
+      flex-shrink: 0; 
     }
     .refresh-btn:hover { background: var(--primary-color); color: #fff; }
 
@@ -81,7 +85,6 @@
       transition: transform 0.2s;
     }
     
-    /* 🎯 防破圖核心：加入 flex-shrink: 0 與 min-width，沒名次也不會塌陷 */
     .rank-num { font-size: 32px; font-weight: 900; color: #888; width: 55px; min-width: 55px; flex-shrink: 0; text-align: center; margin-right: 15px; }
     .rank-info { flex-grow: 1; min-width: 0; }
     .rank-name { font-size: 24px; font-weight: 900; margin-bottom: 6px; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
@@ -134,17 +137,11 @@
     
     #modal-body { overflow-y: auto; padding-bottom: 10px; }
 
-    /* 🎯 防破圖核心：加入一個可以水平滑動的容器來包裝表格 */
     .table-container {
-      width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch; /* 讓 iOS 滑動更順暢 */
-      margin-top: 10px;
-      border-radius: 8px;
-      box-shadow: inset 0 0 5px rgba(0,0,0,0.05); /* 視覺提示這裡可以滑動 */
+      width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; 
+      margin-top: 10px; border-radius: 8px; box-shadow: inset 0 0 5px rgba(0,0,0,0.05); 
     }
 
-    /* 強制表格擁有最小寬度，裝不下就往右延展 */
     .detail-table { width: 100%; min-width: 450px; border-collapse: collapse; font-size: 18px; font-weight: bold;}
     .detail-table th, .detail-table td { border: 2px solid #bbb; padding: 10px 4px; text-align: center; }
     .detail-table th { background: #eee; color: #333; font-size: 16px; white-space: nowrap; }
@@ -153,7 +150,6 @@
     .total-score-box { text-align: right; margin-top: 20px; font-size: 22px; font-weight: 900; }
     .total-score-val { color: #d32f2f; font-size: 32px; border-bottom: 4px solid #d32f2f; }
 
-    /* 針對較小螢幕的手機做微調 */
     @media (max-width: 400px) {
       .header-title { font-size: 24px; }
       .search-box { font-size: 16px; padding: 10px 12px; }
@@ -167,7 +163,7 @@
 </head>
 <body>
 
-<header>
+<header id="main-header">
   <div class="header-content">
     <img src="射箭_logo_2.png" alt="協會Logo" class="header-logo">
     <h1 class="header-title">射箭成績查詢</h1>
@@ -235,13 +231,31 @@ function init() {
 
   if (tabsDiv.firstChild) tabsDiv.firstChild.click();
 
-  document.getElementById("search-input").addEventListener("input", function(e) {
+  const searchInput = document.getElementById("search-input");
+  
+  // 🔍 搜尋過濾邏輯
+  searchInput.addEventListener("input", function(e) {
     const keyword = e.target.value.trim();
     if (keyword === "") {
       renderCards(currentData);
     } else {
       renderCards(currentData.filter(item => item.name.toLowerCase().includes(keyword.toLowerCase())), keyword); 
     }
+  });
+
+  // 🎯 核心修復：防止鍵盤彈出時遮擋搜尋框
+  searchInput.addEventListener("focus", function() {
+    // 設定 300 毫秒延遲，等待 iOS 的虛擬鍵盤完全彈出
+    setTimeout(() => {
+      const headerHeight = document.getElementById("main-header").offsetHeight;
+      const elementTop = this.getBoundingClientRect().top + window.scrollY;
+      
+      // 將畫面精準滑動到搜尋框的位置（扣掉導覽列高度，並多留 15px 的呼吸空間）
+      window.scrollTo({
+        top: elementTop - headerHeight - 15,
+        behavior: 'smooth'
+      });
+    }, 300);
   });
 
   window.addEventListener('scroll', function() {
@@ -314,7 +328,6 @@ function renderCards(dataArray, keyword = "") {
     const card = document.createElement("div");
     card.className = "rank-card";
     
-    // 如果沒有名次，就不給獎牌顏色，但依然保留排版空間
     if (item.rank == 1) card.classList.add("rank-1");
     else if (item.rank == 2) card.classList.add("rank-2");
     else if (item.rank == 3) card.classList.add("rank-3");
@@ -351,7 +364,6 @@ async function fetchPlayerDetail(groupName, playerName) {
       return;
     }
     
-    // 🎯 防破圖核心：加入 <div class="table-container"> 讓表格可以左右滑動
     let html = `<div class="table-container">
                   <table class="detail-table">
                     <tr><th>靶數</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>小計</th></tr>`;
