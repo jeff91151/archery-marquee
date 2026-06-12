@@ -6,7 +6,7 @@
   <title>射箭比賽成績查詢</title>
   <style>
     :root {
-      --primary-color: #6d4c41; /* 配合 Logo 的大地色系 */
+      --primary-color: #6d4c41; 
       --secondary-color: #d7ccc8;
       --bg-color: #f4f7f6;
     }
@@ -17,7 +17,6 @@
       color: #333;
     }
     
-    /* 頂部包含 Logo 的導覽列 */
     header {
       background: #fff;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -32,25 +31,12 @@
       padding: 10px 15px 5px 15px;
       gap: 15px;
     }
-    .header-logo {
-      height: 50px; 
-      width: auto;
-    }
-    .header-title {
-      margin: 0;
-      color: var(--primary-color);
-      font-size: 22px;
-    }
+    .header-logo { height: 50px; width: auto; }
+    .header-title { margin: 0; color: var(--primary-color); font-size: 22px; }
     
-    /* 頁籤選單 */
     .tabs-container {
-      display: flex;
-      overflow-x: auto;
-      white-space: nowrap;
-      padding: 10px 15px;
-      gap: 10px;
-      scrollbar-width: none; 
-      -ms-overflow-style: none;
+      display: flex; overflow-x: auto; white-space: nowrap;
+      padding: 10px 15px; gap: 10px; scrollbar-width: none; -ms-overflow-style: none;
     }
     .tabs-container::-webkit-scrollbar { display: none; }
     
@@ -64,57 +50,33 @@
       box-shadow: 0 2px 6px rgba(109, 76, 65, 0.4);
     }
 
-    /* 內容與搜尋區 */
-    .content-area {
-      padding: 20px 15px; max-width: 1200px; margin: 0 auto;
-    }
+    .content-area { padding: 20px 15px; max-width: 1200px; margin: 0 auto; }
 
-    /* 搜尋列與重新整理按鈕的排版 */
-    .controls-area {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
+    .controls-area { display: flex; gap: 10px; margin-bottom: 20px; }
     .search-box {
-      flex-grow: 1;
-      padding: 12px 15px;
-      border: 2px solid var(--secondary-color);
-      border-radius: 8px;
-      font-size: 16px;
-      box-sizing: border-box;
-      outline: none;
-      transition: border-color 0.3s;
+      flex-grow: 1; padding: 12px 15px; border: 2px solid var(--secondary-color);
+      border-radius: 8px; font-size: 16px; box-sizing: border-box;
+      outline: none; transition: border-color 0.3s;
     }
     .search-box:focus { border-color: var(--primary-color); }
     
     .refresh-btn {
-      background: #fff;
-      border: 2px solid var(--primary-color);
-      color: var(--primary-color);
-      border-radius: 8px;
-      padding: 0 15px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
-      white-space: nowrap;
+      background: #fff; border: 2px solid var(--primary-color); color: var(--primary-color);
+      border-radius: 8px; padding: 0 15px; font-size: 16px; font-weight: bold;
+      cursor: pointer; transition: 0.3s; white-space: nowrap;
     }
     .refresh-btn:hover { background: var(--primary-color); color: #fff; }
     .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
     #status-msg { text-align: center; color: #888; font-size: 18px; margin-top: 40px; display: none; }
 
-    /* 成績列表 Grid */
     .rank-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 15px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;
     }
 
     .rank-card {
-      background: #fff; border-radius: 10px; padding: 15px;
-      display: flex; align-items: center; cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid #ddd;
+      background: #fff; border-radius: 10px; padding: 15px; display: flex; align-items: center; 
+      cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid #ddd;
       transition: transform 0.2s, box-shadow 0.2s;
     }
     .rank-card:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -131,64 +93,35 @@
     .rank-3 { border-left-color: #CD7F32; background: #FFF6F0; }
     .rank-3 .rank-num { color: #CD7F32; font-size: 26px; }
 
-    /* 搜尋關鍵字高亮 */
-    .highlight {
-      background-color: #fff59d; 
-      color: #d84315; 
-      padding: 0 2px;
-      border-radius: 3px;
-    }
+    .highlight { background-color: #fff59d; color: #d84315; padding: 0 2px; border-radius: 3px; }
 
-    /* 骨架屏 (Skeleton) 動畫與樣式 */
     .skeleton-card { cursor: default; }
     .skeleton-card:hover { transform: none; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     .shimmer-box {
       background: #f6f7f8;
       background-image: linear-gradient(90deg, #eee 25%, #e0e0e0 50%, #eee 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite linear;
-      border-radius: 4px;
+      background-size: 200% 100%; animation: shimmer 1.5s infinite linear; border-radius: 4px;
     }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     .skel-num { width: 35px; height: 35px; margin: 0 auto; }
     .skel-line1 { width: 60%; height: 20px; margin-bottom: 8px; }
     .skel-line2 { width: 40%; height: 16px; }
 
-    /* 🎯 醫美級修正：回到頂部按鈕樣式 */
+    /* 修正後的回到頂部按鈕 */
     #back-to-top {
-      position: fixed;
-      bottom: 25px; /* 下移一點點 */
-      right: 25px;  /* 左移一點點 */
-      z-index: 99;
-      background-color: var(--primary-color); /* explicitly use background-color */
-      color: white;
-      border: none;
-      width: 55px;  /* 稍微加大，更好按 */
-      height: 55px; /* 稍微加大，更好按 */
-      border-radius: 50%;
-      font-size: 26px; /* 稍微加大箭頭 */
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3); /* 陰影清晰一點 */
-      transition: all 0.3s ease; /* 更流暢的動畫 */
-      
-      /* ✨ 核心修正：iOS Safari 防呆與強放置中 */
-      display: none; /* 預設隱藏，由 JS 控制顯示為 flex */
-      align-items: center; /* 垂直置中 */
-      justify-content: center; /* 水平置中 */
-      padding: 0;
-      margin: 0;
-      outline: none; /* 拔掉點擊時的藍色框 */
-      -webkit-tap-highlight-color: transparent; /* 拔掉 iOS 點擊時的灰色背景框 */
-      -webkit-appearance: none; /* 強制拔掉 iOS 按鈕預設樣式 */
-      line-height: 1; /* 修正 emoji 垂直偏離問題 */
+      position: fixed; bottom: 25px; right: 25px; z-index: 99;
+      background-color: var(--primary-color); border: none;
+      width: 55px; height: 55px; border-radius: 50%;
+      cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
+      display: none; align-items: center; justify-content: center;
+      padding: 0; margin: 0; outline: none;
+      -webkit-tap-highlight-color: transparent; -webkit-appearance: none;
     }
-    /* 手機上 hover 不明顯，針對 hover 和 active 做同樣處理 */
     #back-to-top:hover, #back-to-top:active { 
-      background-color: #5d4037; 
-      transform: scale(1.05); /* hover 時微微放大就好 */
+      background-color: #5d4037; transform: scale(1.05); 
     }
 
-    /* 詳細成績彈出視窗 (Modal) */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(0,0,0,0.6); display: none;
@@ -196,23 +129,17 @@
     }
     .modal-content {
       background: #fff; width: 90%; max-width: 500px;
-      border-radius: 12px; padding: 20px; box-sizing: border-box;
-      max-height: 80vh; overflow-y: auto;
+      border-radius: 12px; padding: 20px; box-sizing: border-box; max-height: 80vh; overflow-y: auto;
     }
     .modal-header {
       display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 10px;
     }
     .modal-title { margin: 0; font-size: 20px; color: var(--primary-color); }
-    .close-btn {
-      background: none; border: none; font-size: 28px;
-      cursor: pointer; color: #999; line-height: 1;
-    }
+    .close-btn { background: none; border: none; font-size: 28px; cursor: pointer; color: #999; line-height: 1; }
     
     .detail-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-    .detail-table th, .detail-table td {
-      border: 1px solid #ddd; padding: 8px 4px; text-align: center;
-    }
+    .detail-table th, .detail-table td { border: 1px solid #ddd; padding: 8px 4px; text-align: center; }
     .detail-table th { background: #f5f5f5; font-size: 12px; }
     .round-title { font-weight: bold; background: #eef; text-align: left !important; padding-left: 10px !important;}
   </style>
@@ -237,7 +164,11 @@
   <div id="rank-container" class="rank-grid"></div>
 </div>
 
-<button id="back-to-top" onclick="scrollToTop()">⬆️</button>
+<button id="back-to-top" onclick="scrollToTop()">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="18 15 12 9 6 15"></polyline>
+  </svg>
+</button>
 
 <div class="modal-overlay" id="detail-modal">
   <div class="modal-content">
@@ -284,7 +215,6 @@ function init() {
 
   if (tabsDiv.firstChild) tabsDiv.firstChild.click();
 
-  // 綁定搜尋框事件 (加入 keyword 傳遞以供高亮顯示)
   document.getElementById("search-input").addEventListener("input", function(e) {
     const keyword = e.target.value.trim();
     if (keyword === "") {
@@ -292,27 +222,25 @@ function init() {
     } else {
       const lowerKeyword = keyword.toLowerCase();
       const filtered = currentData.filter(item => item.name.toLowerCase().includes(lowerKeyword));
-      renderCards(filtered, keyword); // 傳入 keyword 進行高亮
+      renderCards(filtered, keyword); 
     }
   });
 
-  // 綁定滾動事件：控制「回到頂部」按鈕顯示
   window.addEventListener('scroll', function() {
     const topBtn = document.getElementById('back-to-top');
     if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
-      topBtn.style.display = "flex"; /* 🎯 核心修正：這裡要改成 flex 才能對齊 */
+      topBtn.style.display = "flex"; 
     } else {
       topBtn.style.display = "none";
     }
   });
 }
 
-// 手動更新當前組別成績
 function refreshCurrentData() {
   const btn = document.getElementById("refresh-btn");
   btn.disabled = true;
   btn.textContent = "⏳ 更新中";
-  document.getElementById("search-input").value = ""; // 清空搜尋框
+  document.getElementById("search-input").value = ""; 
   
   loadData(currentSheet).finally(() => {
     btn.disabled = false;
@@ -320,16 +248,13 @@ function refreshCurrentData() {
   });
 }
 
-// 回到頂部平滑滾動
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// 渲染骨架屏 (Skeleton)
 function renderSkeleton() {
   const container = document.getElementById("rank-container");
   container.innerHTML = "";
-  // 隨機產生 6~8 個骨架卡片填滿畫面
   for(let i=0; i<8; i++) {
     container.innerHTML += `
       <div class="rank-card skeleton-card">
@@ -346,8 +271,6 @@ function renderSkeleton() {
 async function loadData(sheetName) {
   const statusMsg = document.getElementById("status-msg");
   statusMsg.style.display = "none";
-  
-  // 顯示骨架屏動畫
   renderSkeleton();
 
   try {
@@ -370,7 +293,6 @@ async function loadData(sheetName) {
   }
 }
 
-// 負責把資料畫成一張張的卡片 (🎯 新增：加入關鍵字高亮邏輯)
 function renderCards(dataArray, keyword = "") {
   const container = document.getElementById("rank-container");
   container.innerHTML = "";
@@ -389,10 +311,8 @@ function renderCards(dataArray, keyword = "") {
     else if (item.rank == 2) { card.classList.add("rank-2"); medal = "🥈"; }
     else if (item.rank == 3) { card.classList.add("rank-3"); medal = "🥉"; }
 
-    // 處理關鍵字高亮
     let displayName = item.name;
     if (keyword !== "") {
-      // 使用 RegExp 忽略大小寫進行替換，加上 highlight class
       const regex = new RegExp(`(${keyword})`, 'gi');
       displayName = item.name.replace(regex, `<span class="highlight">$1</span>`);
     }
@@ -410,7 +330,6 @@ function renderCards(dataArray, keyword = "") {
   });
 }
 
-// 呼叫後端取得詳細分數履歷
 async function fetchPlayerDetail(groupName, playerName) {
   const modal = document.getElementById("detail-modal");
   const modalBody = document.getElementById("modal-body");
