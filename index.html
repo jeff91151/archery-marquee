@@ -69,7 +69,7 @@
       padding: 20px 15px; max-width: 1200px; margin: 0 auto;
     }
 
-    /* 🎯 新增：搜尋列與重新整理按鈕的排版 */
+    /* 搜尋列與重新整理按鈕的排版 */
     .controls-area {
       display: flex;
       gap: 10px;
@@ -131,15 +131,15 @@
     .rank-3 { border-left-color: #CD7F32; background: #FFF6F0; }
     .rank-3 .rank-num { color: #CD7F32; font-size: 26px; }
 
-    /* 🎯 新增：搜尋關鍵字高亮 */
+    /* 搜尋關鍵字高亮 */
     .highlight {
-      background-color: #fff59d; /* 柔和的黃色 */
-      color: #d84315; /* 搭配深橘紅色讓字體更明顯 */
+      background-color: #fff59d; 
+      color: #d84315; 
       padding: 0 2px;
       border-radius: 3px;
     }
 
-    /* 🎯 新增：骨架屏 (Skeleton) 動畫與樣式 */
+    /* 骨架屏 (Skeleton) 動畫與樣式 */
     .skeleton-card { cursor: default; }
     .skeleton-card:hover { transform: none; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     .shimmer-box {
@@ -154,25 +154,39 @@
     .skel-line1 { width: 60%; height: 20px; margin-bottom: 8px; }
     .skel-line2 { width: 40%; height: 16px; }
 
-    /* 🎯 新增：回到頂部按鈕 */
+    /* 🎯 醫美級修正：回到頂部按鈕樣式 */
     #back-to-top {
       position: fixed;
-      bottom: 30px;
-      right: 30px;
+      bottom: 25px; /* 下移一點點 */
+      right: 25px;  /* 左移一點點 */
       z-index: 99;
-      background: var(--primary-color);
+      background-color: var(--primary-color); /* explicitly use background-color */
       color: white;
       border: none;
-      width: 50px;
-      height: 50px;
+      width: 55px;  /* 稍微加大，更好按 */
+      height: 55px; /* 稍微加大，更好按 */
       border-radius: 50%;
-      font-size: 24px;
+      font-size: 26px; /* 稍微加大箭頭 */
       cursor: pointer;
-      display: none; /* 預設隱藏 */
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      transition: transform 0.2s, background 0.2s;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3); /* 陰影清晰一點 */
+      transition: all 0.3s ease; /* 更流暢的動畫 */
+      
+      /* ✨ 核心修正：iOS Safari 防呆與強放置中 */
+      display: none; /* 預設隱藏，由 JS 控制顯示為 flex */
+      align-items: center; /* 垂直置中 */
+      justify-content: center; /* 水平置中 */
+      padding: 0;
+      margin: 0;
+      outline: none; /* 拔掉點擊時的藍色框 */
+      -webkit-tap-highlight-color: transparent; /* 拔掉 iOS 點擊時的灰色背景框 */
+      -webkit-appearance: none; /* 強制拔掉 iOS 按鈕預設樣式 */
+      line-height: 1; /* 修正 emoji 垂直偏離問題 */
     }
-    #back-to-top:hover { background: #5d4037; transform: scale(1.1); }
+    /* 手機上 hover 不明顯，針對 hover 和 active 做同樣處理 */
+    #back-to-top:hover, #back-to-top:active { 
+      background-color: #5d4037; 
+      transform: scale(1.05); /* hover 時微微放大就好 */
+    }
 
     /* 詳細成績彈出視窗 (Modal) */
     .modal-overlay {
@@ -286,14 +300,14 @@ function init() {
   window.addEventListener('scroll', function() {
     const topBtn = document.getElementById('back-to-top');
     if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
-      topBtn.style.display = "block";
+      topBtn.style.display = "flex"; /* 🎯 核心修正：這裡要改成 flex 才能對齊 */
     } else {
       topBtn.style.display = "none";
     }
   });
 }
 
-// 🎯 新增：手動更新當前組別成績
+// 手動更新當前組別成績
 function refreshCurrentData() {
   const btn = document.getElementById("refresh-btn");
   btn.disabled = true;
@@ -306,12 +320,12 @@ function refreshCurrentData() {
   });
 }
 
-// 🎯 新增：回到頂部平滑滾動
+// 回到頂部平滑滾動
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// 🎯 新增：渲染骨架屏 (Skeleton)
+// 渲染骨架屏 (Skeleton)
 function renderSkeleton() {
   const container = document.getElementById("rank-container");
   container.innerHTML = "";
