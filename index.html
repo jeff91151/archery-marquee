@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>射箭比賽成績查詢 - 敬老清晰版</title>
+  <title>射箭比賽成績查詢 - 清晰版</title>
   <style>
     :root {
-      /* 調深顏色以增加對比度，方便長輩閱讀 */
+      var(--primary-color): #4e342e; 
       --primary-color: #4e342e; 
       --secondary-color: #bcaaa4;
       --bg-color: #f0f4f3;
@@ -17,7 +17,6 @@
       font-family: "Microsoft JhengHei", -apple-system, sans-serif;
       background: var(--bg-color);
       color: var(--text-main);
-      /* 讓整體字體基數變大 */
       font-size: 18px; 
     }
     
@@ -30,7 +29,7 @@
       display: flex; align-items: center; justify-content: center;
       padding: 15px 15px 10px 15px; gap: 15px;
     }
-    .header-logo { height: 65px; width: auto; } /* Logo 加大 */
+    .header-logo { height: 65px; width: auto; } 
     .header-title { margin: 0; color: var(--primary-color); font-size: 28px; font-weight: 900; }
     
     .tabs-container {
@@ -39,66 +38,64 @@
     }
     .tabs-container::-webkit-scrollbar { display: none; }
     
-    /* 頁籤按鈕加大加粗 */
     .tab-btn {
       background: #e0e0e0; border: none; padding: 12px 22px;
       border-radius: 28px; font-size: 20px; cursor: pointer;
       transition: 0.3s; font-weight: 900; color: #444;
+      flex-shrink: 0; /* 確保按鈕不會被壓縮 */
     }
     .tab-btn.active {
       background: var(--primary-color); color: #fff;
       box-shadow: 0 4px 10px rgba(78, 52, 46, 0.4);
     }
 
-    .content-area { padding: 20px 15px; max-width: 1200px; margin: 0 auto; }
+    .content-area { padding: 20px 15px; max-width: 1200px; margin: 0 auto; overflow-x: hidden; }
 
-    .controls-area { display: flex; gap: 12px; margin-bottom: 25px; }
+    .controls-area { display: flex; gap: 10px; margin-bottom: 25px; align-items: stretch; }
     
-    /* 搜尋框加大 */
     .search-box {
-      flex-grow: 1; padding: 15px 20px; border: 3px solid var(--secondary-color);
-      border-radius: 12px; font-size: 22px; box-sizing: border-box;
+      flex-grow: 1; padding: 12px 15px; border: 3px solid var(--secondary-color);
+      border-radius: 12px; font-size: 20px; box-sizing: border-box;
       outline: none; transition: border-color 0.3s;
+      min-width: 0; /* 防止超出 flex 容器 */
     }
     .search-box:focus { border-color: var(--primary-color); }
     
-    /* 更新按鈕加大 */
     .refresh-btn {
       background: #fff; border: 3px solid var(--primary-color); color: var(--primary-color);
-      border-radius: 12px; padding: 0 20px; font-size: 20px; font-weight: 900;
+      border-radius: 12px; padding: 0 15px; font-size: 20px; font-weight: 900;
       cursor: pointer; transition: 0.3s; white-space: nowrap;
+      flex-shrink: 0; /* 🎯 防破圖核心：強制更新按鈕不能被壓縮 */
     }
     .refresh-btn:hover { background: var(--primary-color); color: #fff; }
 
     #status-msg { text-align: center; color: #666; font-size: 22px; margin-top: 50px; display: none; font-weight: bold;}
 
     .rank-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;
     }
 
-    /* 成績卡片高度加高，字體加大 */
     .rank-card {
-      background: #fff; border-radius: 15px; padding: 22px; display: flex; align-items: center; 
+      background: #fff; border-radius: 15px; padding: 20px; display: flex; align-items: center; 
       cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,0.1); border-left: 8px solid #ddd;
       transition: transform 0.2s;
     }
     
-    .rank-num { font-size: 36px; font-weight: 900; color: #888; width: 60px; text-align: center; margin-right: 20px; }
-    .rank-info { flex-grow: 1; }
-    .rank-name { font-size: 26px; font-weight: 900; margin-bottom: 6px; color: #000;}
-    .rank-score { font-size: 20px; color: #444; font-weight: bold; }
+    /* 🎯 防破圖核心：加入 flex-shrink: 0 與 min-width，沒名次也不會塌陷 */
+    .rank-num { font-size: 32px; font-weight: 900; color: #888; width: 55px; min-width: 55px; flex-shrink: 0; text-align: center; margin-right: 15px; }
+    .rank-info { flex-grow: 1; min-width: 0; }
+    .rank-name { font-size: 24px; font-weight: 900; margin-bottom: 6px; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+    .rank-score { font-size: 18px; color: #444; font-weight: bold; }
     
     .rank-1 { border-left-color: #FFD700; background: #FFFDF0; }
-    .rank-1 .rank-num { color: #d4af37; font-size: 42px; }
+    .rank-1 .rank-num { color: #d4af37; font-size: 38px; }
     .rank-2 { border-left-color: #C0C0C0; background: #F8F8F8; }
-    .rank-2 .rank-num { color: #8a8a8a; font-size: 38px; }
+    .rank-2 .rank-num { color: #8a8a8a; font-size: 34px; }
     .rank-3 { border-left-color: #CD7F32; background: #FFF6F0; }
-    .rank-3 .rank-num { color: #a0522d; font-size: 38px; }
+    .rank-3 .rank-num { color: #a0522d; font-size: 34px; }
 
-    /* 高亮色彩加深 */
     .highlight { background-color: #ffeb3b; color: #bf360c; padding: 0 4px; border-radius: 4px; }
 
-    /* 骨架屏 */
     .shimmer-box {
       background: #e0e0e0;
       background-image: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
@@ -109,40 +106,63 @@
     .skel-line1 { width: 70%; height: 28px; margin-bottom: 10px; }
     .skel-line2 { width: 50%; height: 22px; }
 
-    /* 回到頂部按鈕 (SVG 版本) */
     #back-to-top {
-      position: fixed; bottom: 35px; right: 30px; z-index: 99;
+      position: fixed; bottom: 30px; right: 25px; z-index: 99;
       background-color: var(--primary-color); border: none;
-      width: 65px; height: 65px; border-radius: 50%;
+      width: 60px; height: 60px; border-radius: 50%;
       cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.4);
       display: none; align-items: center; justify-content: center;
-      -webkit-appearance: none;
+      -webkit-appearance: none; padding: 0;
     }
 
-    /* 詳細成績 Modal */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(0,0,0,0.75); display: none;
       justify-content: center; align-items: center; z-index: 1000;
     }
     .modal-content {
-      background: #fff; width: 95%; max-width: 600px;
-      border-radius: 18px; padding: 25px; box-sizing: border-box; max-height: 90vh; overflow-y: auto;
+      background: #fff; width: 92%; max-width: 600px;
+      border-radius: 18px; padding: 20px; box-sizing: border-box; max-height: 90vh; display: flex; flex-direction: column;
     }
     .modal-header {
       display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 20px; border-bottom: 3px solid #eee; padding-bottom: 12px;
+      margin-bottom: 15px; border-bottom: 3px solid #eee; padding-bottom: 12px;
+      flex-shrink: 0;
     }
-    .modal-title { margin: 0; font-size: 28px; color: var(--primary-color); font-weight: 900; }
-    .close-btn { font-size: 45px; color: #666; border: none; background: none; cursor: pointer; }
+    .modal-title { margin: 0; font-size: 24px; color: var(--primary-color); font-weight: 900; }
+    .close-btn { font-size: 40px; color: #666; border: none; background: none; cursor: pointer; padding: 0 5px; line-height: 1;}
     
-    .detail-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 18px; font-weight: bold;}
-    .detail-table th, .detail-table td { border: 2px solid #bbb; padding: 12px 5px; text-align: center; }
-    .detail-table th { background: #eee; color: #333; font-size: 16px; }
-    .round-title { font-weight: 900; background: #e3f2fd; color: #1565c0; text-align: left !important; padding-left: 12px !important;}
+    #modal-body { overflow-y: auto; padding-bottom: 10px; }
+
+    /* 🎯 防破圖核心：加入一個可以水平滑動的容器來包裝表格 */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch; /* 讓 iOS 滑動更順暢 */
+      margin-top: 10px;
+      border-radius: 8px;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.05); /* 視覺提示這裡可以滑動 */
+    }
+
+    /* 強制表格擁有最小寬度，裝不下就往右延展 */
+    .detail-table { width: 100%; min-width: 450px; border-collapse: collapse; font-size: 18px; font-weight: bold;}
+    .detail-table th, .detail-table td { border: 2px solid #bbb; padding: 10px 4px; text-align: center; }
+    .detail-table th { background: #eee; color: #333; font-size: 16px; white-space: nowrap; }
+    .round-title { font-weight: 900; background: #e3f2fd; color: #1565c0; text-align: left !important; padding-left: 8px !important; white-space: nowrap;}
     
-    .total-score-box { text-align: right; margin-top: 20px; font-size: 24px; font-weight: 900; }
-    .total-score-val { color: #d32f2f; font-size: 36px; border-bottom: 4px solid #d32f2f; }
+    .total-score-box { text-align: right; margin-top: 20px; font-size: 22px; font-weight: 900; }
+    .total-score-val { color: #d32f2f; font-size: 32px; border-bottom: 4px solid #d32f2f; }
+
+    /* 針對較小螢幕的手機做微調 */
+    @media (max-width: 400px) {
+      .header-title { font-size: 24px; }
+      .search-box { font-size: 16px; padding: 10px 12px; }
+      .refresh-btn { font-size: 16px; padding: 0 12px; }
+      .rank-name { font-size: 22px; }
+      .rank-num { font-size: 28px; width: 45px; min-width: 45px;}
+      .rank-1 .rank-num { font-size: 34px; }
+      .modal-title { font-size: 20px; }
+    }
   </style>
 </head>
 <body>
@@ -166,7 +186,7 @@
 </div>
 
 <button id="back-to-top" onclick="scrollToTop()">
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
     <polyline points="18 15 12 9 6 15"></polyline>
   </svg>
 </button>
@@ -184,7 +204,6 @@
 </div>
 
 <script>
-// ⚠️ 保持你的 GAS URL 不變
 const baseURL = "https://script.google.com/macros/s/AKfycbzmBdB-IvDzS2U4VBnnYO1aup-xXdEQqMkfMkChzClYiBE2kk30Yt8nTyQey8ZW5blK/exec";
 
 const sheets = [
@@ -294,6 +313,8 @@ function renderCards(dataArray, keyword = "") {
   dataArray.forEach(item => {
     const card = document.createElement("div");
     card.className = "rank-card";
+    
+    // 如果沒有名次，就不給獎牌顏色，但依然保留排版空間
     if (item.rank == 1) card.classList.add("rank-1");
     else if (item.rank == 2) card.classList.add("rank-2");
     else if (item.rank == 3) card.classList.add("rank-3");
@@ -305,10 +326,10 @@ function renderCards(dataArray, keyword = "") {
     }
 
     card.innerHTML = `
-      <div class="rank-num">${item.rank}</div>
+      <div class="rank-num">${item.rank || '-'}</div>
       <div class="rank-info">
         <div class="rank-name">${displayName}</div>
-        <div class="rank-score">總分：${item.score} 分</div>
+        <div class="rank-score">總分：${item.score || 0} 分</div>
       </div>`;
     card.onclick = () => fetchPlayerDetail(currentSheet, item.name);
     container.appendChild(card);
@@ -329,8 +350,11 @@ async function fetchPlayerDetail(groupName, playerName) {
       modalBody.innerHTML = `<div style='text-align:center; color:red; padding: 20px; font-size:22px;'>❌ ${detail.error}</div>`;
       return;
     }
-    let html = `<table class="detail-table">
-                  <tr><th>靶數</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>小計</th></tr>`;
+    
+    // 🎯 防破圖核心：加入 <div class="table-container"> 讓表格可以左右滑動
+    let html = `<div class="table-container">
+                  <table class="detail-table">
+                    <tr><th>靶數</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>小計</th></tr>`;
     let totalSum = 0;
     detail.scores.forEach((roundScores, index) => {
       let roundSum = 0;
@@ -342,7 +366,9 @@ async function fetchPlayerDetail(groupName, playerName) {
       totalSum += roundSum;
       html += `<tr><td class="round-title">第 ${index + 1} 局</td>${tdHtml}<td style="color:var(--primary-color);">${roundSum}</td></tr>`;
     });
-    html += `</table><div class="total-score-box">總成績：<span class="total-score-val">${totalSum}</span> 分</div>`;
+    html += `   </table>
+              </div>
+              <div class="total-score-box">總成績：<span class="total-score-val">${totalSum}</span> 分</div>`;
     modalBody.innerHTML = html;
   } catch (error) {
     modalBody.innerHTML = "<div style='text-align:center; color:red; font-size:22px;'>❌ 載入失敗</div>";
